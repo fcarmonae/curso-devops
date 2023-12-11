@@ -1,0 +1,104 @@
+
+
+
+
+
+docker run -d --name servidor_bd \
+	--network red1 \
+	-e MARIADB_USER=user_wp \
+	-e MARIADB_PASSWORD=secret \
+	-e MARIADB_DATABASE=bd_wp \
+	-e MARIADB_ROOT_PASSWORD=secret \
+	-v bd:/var/lib/mysql \
+	mariadb:latest
+
+	
+docker run -d --name wordpress \
+	--network red1 \
+	-e WORDPRESS_BD_HOST=servidor_bd \
+	-e WORDPRESS_BD_USER=user_wp\
+	-e WORDPRESS_BD_PASSWORD=secret \
+	-e WORDPRESS_BD_NAME=bd_wp \
+	-v wp:/var/www/html \
+	-p 8080:80 \
+	wordpress
+
+
+
+
+#Crear redes
+docker network create red1
+
+#Crear volumenes
+docker volume create wp
+docker volume create bd
+
+
+#Docker operativos.
+#mysql
+docker run -d --name servidor_bd \
+	--network red1 \
+	-e MARIADB_USER=user_wp \
+	-e MARIADB_PASSWORD=secret \
+	-e MARIADB_DATABASE=bd_wp \
+	-e MARIADB_ROOT_PASSWORD=secret \
+	-v bd:/var/lib/mysql \
+	mariadb:latest
+
+#Wordpress
+docker run -d --name wordpress \
+	--network red1 \
+	-e WORDPRESS_DB_HOST=servidor_bd \
+	-e WORDPRESS_DB_USER=user_wp \
+	-e WORDPRESS_DB_PASSWORD=secret \
+	-e WORDPRESS_DB_NAME=bd_wp \
+	-v wp_/var/www/html \
+	-p 8080:80 \
+	wordpress
+
+
+#Verificar Docker
+docker inspect servidor_bd
+
+docker ps -a
+docker rm -f wordpress
+docker rm -f servidor_bd
+
+docker exec -it servidor_bd sh
+docker exec -it wordpress sh
+
+docker stop wordpress
+docker stop servidor_bd
+
+
+Phpmyadmin
+
+Ejemplos
+docker run --name phpmyadmin -d --network red_wp --link servidor_db:db -p 8081:80 phpmyadmin
+docker run --name phpmyadmin1 -d -e PMA_HOST=servidor_mysql -p 9090:80 phpmyadmin
+
+docker run --name phpmyadmin1 -d --network red1 --link servidor_mysql:db -p 9093:80 phpmyadmin
+docker run --name phpmyadmin -d --network red1 --link servidor_bd:db -p 8081:80 phpmyadmin
+
+
+#Otro proyecto que encontre en internet.
+$ docker network create red_wp
+
+$ docker run -d --name servidor_mysql \
+                --network red_wp \
+                -v /opt/mysql_wp:/var/lib/mysql \
+                -e MYSQL_DATABASE=bd_wp \
+                -e MYSQL_USER=user_wp \
+                -e MYSQL_PASSWORD=asdasd \
+                -e MYSQL_ROOT_PASSWORD=asdasd \
+                mariadb
+                
+$ docker run -d --name servidor_wp \
+                --network red_wp \
+                -v /opt/wordpress:/var/www/html/wp-content \
+                -e WORDPRESS_DB_HOST=servidor_mysql \
+                -e WORDPRESS_DB_USER=user_wp \
+                -e WORDPRESS_DB_PASSWORD=asdasd \
+                -e WORDPRESS_DB_NAME=bd_wp \
+                -p 80:80 \
+                wordpress
